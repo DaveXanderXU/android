@@ -456,7 +456,8 @@ public class OCFileListFragment extends ExtendedListFragment implements SearchVi
 
         @Override
         public void onDrawerOpened(View drawerView) {
-            // nothing to do
+            ((FileDisplayActivity) getActivity()).hideSoftKeyboard();
+            mFileListAdapter.clearFilterBySearch();
         }
 
         /**
