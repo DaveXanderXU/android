@@ -90,7 +90,7 @@ import java.util.List;
  *
  * TODO refactor to get rid of direct dependency on FileDisplayActivity
  */
-public class OCFileListFragment extends ExtendedListFragment implements SearchView.OnQueryTextListener{
+public class OCFileListFragment extends ExtendedListFragment implements SearchView.OnQueryTextListener {
 
     private static final String TAG = OCFileListFragment.class.getSimpleName();
 
@@ -119,6 +119,8 @@ public class OCFileListFragment extends ExtendedListFragment implements SearchVi
     private boolean miniFabClicked = false;
     private ActionMode mActiveActionMode;
     private OCFileListFragment.MultiChoiceModeListener mMultiChoiceModeListener;
+
+    private SearchView mSearchView;
 
 
     /**
@@ -246,10 +248,10 @@ public class OCFileListFragment extends ExtendedListFragment implements SearchVi
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
-        searchView.setMaxWidth(Integer.MAX_VALUE);
-        searchView.setQueryHint(getResources().getString(R.string.actionbar_search));
-        searchView.setOnQueryTextListener(this);
+        mSearchView = (SearchView) menu.findItem(R.id.action_search).getActionView();
+        mSearchView.setMaxWidth(Integer.MAX_VALUE);
+        mSearchView.setQueryHint(getResources().getString(R.string.actionbar_search));
+        mSearchView.setOnQueryTextListener(this);
     }
 
     /**
@@ -456,8 +458,7 @@ public class OCFileListFragment extends ExtendedListFragment implements SearchVi
 
         @Override
         public void onDrawerOpened(View drawerView) {
-            ((FileDisplayActivity) getActivity()).hideSoftKeyboard();
-            mFileListAdapter.clearFilterBySearch();
+            clearLocalSearchView();
         }
 
         /**
@@ -605,6 +606,14 @@ public class OCFileListFragment extends ExtendedListFragment implements SearchVi
         }
     }
 
+    private void clearLocalSearchView() {
+        ((FileDisplayActivity) getActivity()).hideSoftKeyboard();
+        mFileListAdapter.clearFilterBySearch();
+        if (mSearchView != null) {
+            mSearchView.onActionViewCollapsed();
+        }
+    }
+
     /**
      * Init listener that will handle interactions in multiple selection mode.
      */
@@ -688,7 +697,6 @@ public class OCFileListFragment extends ExtendedListFragment implements SearchVi
         if(isInPowerSaveMode()) {
             listDirectory(file);
         } else {
-
             Animation fadeOutFront = AnimationUtils.loadAnimation(getContext(), R.anim.dir_fadeout_front);
             Handler eventHandler = new Handler();
 
@@ -745,7 +753,6 @@ public class OCFileListFragment extends ExtendedListFragment implements SearchVi
                 mContainerActivity.onBrowsedDownTo(file);
                 // save index and top position
                 saveIndexAndTopPosition(position);
-
             } else { /// Click on a file
                 if (PreviewImageFragment.canBePreviewed(file)) {
                     // preview image - it handles the sync, if needed
@@ -948,7 +955,6 @@ public class OCFileListFragment extends ExtendedListFragment implements SearchVi
             mFile = directory;
 
             updateLayout();
-
         }
     }
 
@@ -982,6 +988,7 @@ public class OCFileListFragment extends ExtendedListFragment implements SearchVi
             setFooterText(generateFooterText(filesCount, foldersCount));
         }
         invalidateActionMode();
+        clearLocalSearchView();
     }
 
     private void invalidateActionMode() {
